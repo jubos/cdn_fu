@@ -1,0 +1,2 @@
+class CdnFuConfigError < StandardError
+end
