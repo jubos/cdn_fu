@@ -5,19 +5,6 @@ Dir[File.join(File.dirname(__FILE__),"*.rb")].each {|f| require f if f !~ /cdn_f
   Dir[File.join(File.dirname(__FILE__),subdir, "*")].each {|f| require f}
 end
 
-class Object
-  def cdn_metaclass
-    class << self
-      self
-    end
-  end
-
-  def cdn_meta_eval(&block)
-    puts "Evaling in #{self.class}"
-    cdn_metaclass.class_eval(&block)
-  end
-end
-
 # This is just a storage class for the configuration for CdnFu
 class CdnFuConfig
   cattr_accessor :asset_id,:tmp_dir
@@ -50,14 +37,14 @@ class CdnFuConfig
     case @minifier
     when Proc
       @minifier.call(file_list)
-    when Class
+    when CdnFuMinifier
       @minifier.validate_and_minify(file_list)
     end
 
     case @uploader
     when Proc
       @uploader.call(file_list)
-    when Class
+    when CdnFuUploader
       @uploader.validate_and_upload(file_list)
     end
   end
@@ -98,21 +85,21 @@ class CdnFuConfig
     end
 
     def minifier(minifier_class)
-      @minifier = minifier_class
-      yield @minifier if block_given?
+      @minifier = minifier_class.new
+      @minifier.instance_eval &proc if block_given?
     end
 
     def upload
       if block_given?
         @uploader = proc
       else
-        raise CdnFuConfigError,"No Block Given"
+        raise CdnFuConfigError,"No upload block given"
       end
     end
 
     def uploader(uploader_class)
-      @uploader = uploader_class
-      yield @uploader if block_given?
+      @uploader = uploader_class.new
+      @uploader.instance_eval &proc if block_given?
     end
   end
 end

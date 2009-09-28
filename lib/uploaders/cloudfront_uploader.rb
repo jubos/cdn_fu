@@ -6,19 +6,11 @@ class CloudfrontUploader < CdnFuUploader
   required_attribute :s3_bucket
   optional_attributes :s3_access_key, :s3_secret_key
 
-  cattr_accessor :existing_asset_checksums
-
   MAX_KEYS = 1000
 
-  def self.upload(file_list)
-    access_key = CloudfrontUploader.s3_access_key
-    secret_key = CloudfrontUploader.s3_secret_key
-    access_key ||= ENV["CDN_FU_AMAZON_ACCESS_KEY"]
-    secret_key ||= ENV["CDN_FU_AMAZON_SECRET_KEY"]
-
-    if !access_key or !secret_key
-      raise CdnFuConfigError, "Please specify s3_access_key and s3_secret_key attributes or use the environnment variables: CDN_FU_AMAZON_ACCESS_KEY and CDN_FU_AMAZON_SECRET_KEY"
-    end
+  def upload(file_list)
+    access_key = @s3_access_key ? @s3_access_key : ENV["CDN_FU_AMAZON_ACCESS_KEY"]
+    secret_key = @s3_secret_key ? @s3_secret_key : ENV["CDN_FU_AMAZON_SECRET_KEY"]
 
     AWS::S3::Base.establish_connection!(
       :access_key_id => access_key,
@@ -34,17 +26,23 @@ class CloudfrontUploader < CdnFuUploader
   # This uploader requires a valid asset_id at the top level configuration
   # because cloudfront only invalidates its files every 24 hours, so you need
   # to have an incrementing id to avoid stale assets
-  def self.validate
+  def validate
     if !CdnFuConfig.asset_id 
       raise CdnFuConfigError, "You must specify an asset_id at the top level"
+    end
+    access_key = @s3_access_key ? @s3_access_key : ENV["CDN_FU_AMAZON_ACCESS_KEY"]
+    secret_key = @s3_secret_key ? @s3_secret_key : ENV["CDN_FU_AMAZON_SECRET_KEY"]
+
+    if !access_key or !secret_key
+      raise CdnFuConfigError, "Please specify s3_access_key and s3_secret_key attributes or use the environnment variables: CDN_FU_AMAZON_ACCESS_KEY and CDN_FU_AMAZON_SECRET_KEY"
     end
   end
 
   private
-  def self.populate_existing_asset_checksums 
-    self.existing_asset_checksums = {}
+  def populate_existing_asset_checksums 
+    @existing_asset_checksums = {}
     objects = []
-    bucket = Bucket.find(CloudfrontUploader.s3_bucket)
+    bucket = Bucket.find(@s3_bucket)
     objects += bucket.objects(:max_keys => MAX_KEYS)
     if objects.size == MAX_KEYS
       loop do
@@ -54,12 +52,12 @@ class CloudfrontUploader < CdnFuUploader
       end
     end
     objects.each do |obj|
-      self.existing_asset_checksums[obj.path] = obj.metadata['x-amz-meta-sha1-hash']
+      @existing_asset_checksums[obj.path] = obj.metadata['x-amz-meta-sha1-hash']
     end
     return objects
   end
 
-  def self.upload_single_file(cf_file)
+  def upload_single_file(cf_file)
     versioned_filename = CdnFuConfig.asset_id + "/" + cf_file.remote_path
     options = {}
     options[:access] = :public_read
@@ -67,7 +65,7 @@ class CloudfrontUploader < CdnFuUploader
     path_to_upload ||= cf_file.local_path
     fstat = File.stat(path_to_upload)
     sha1sum = Digest::SHA1.hexdigest(File.open(path_to_upload).read)
-    if remote_sha1 = self.existing_asset_checksums["/" + s3_bucket + "/" + versioned_filename]
+    if remote_sha1 = @existing_asset_checksums["/" + s3_bucket + "/" + versioned_filename]
       if remote_sha1 != sha1sum
         puts "Your assets are different from the ones in s3 with this asset_id.  Please increment your asset_id in cdn_fu.rb"
         exit
