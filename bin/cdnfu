@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+# The command line cdn fu executor
+
+$LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
+require 'cdn_fu'
+opts = CdnFu::CommandLine.new(ARGV)
+opts.parse!

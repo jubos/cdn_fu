@@ -1,7 +1,7 @@
 # This uploader using aws:s3 gem to upload everything to the specified bucket
 require 'rubygems'
 require 'aws/s3'
-class CloudfrontUploader < CdnFuUploader
+class CloudfrontUploader < CdnFu::Uploader
   include AWS::S3
   required_attribute :s3_bucket
   optional_attributes :s3_access_key, :s3_secret_key
