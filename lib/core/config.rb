@@ -28,7 +28,13 @@ module CdnFu
 
     def asset_root_dir(*args)
       return @asset_root_dir if args.size == 0
-      @asset_root_dir = File.expand_path(args[0])
+      asset_root = args.first
+      # TODO add default separator so it works on windows
+      if asset_root[0,1] == '/'
+        @asset_root_dir = File.expand_path(asset_root)
+      else
+        @asset_root_dir = File.expand_path(File.join(Dir.pwd,asset_root))
+      end
     end
 
     def tmp_dir(*args)
