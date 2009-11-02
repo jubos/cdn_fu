@@ -12,6 +12,7 @@ module CdnFu
     end
 
     def self.config
+      @@cfg ||= Config.new
       @@cfg
     end
 
