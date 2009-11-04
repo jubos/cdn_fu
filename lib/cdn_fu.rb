@@ -22,13 +22,13 @@ module CdnFu
   end
 end
 
-require 'core/config_error'
-require 'core/config'
-require 'core/executor'
-require 'core/file_info.rb'
-require 'core/lister.rb'
-require 'core/minifier.rb'
-require 'core/uploader.rb'
+require 'cdn_fu/config_error'
+require 'cdn_fu/config'
+require 'cdn_fu/executor'
+require 'cdn_fu/file_info.rb'
+require 'cdn_fu/lister.rb'
+require 'cdn_fu/minifier.rb'
+require 'cdn_fu/uploader.rb'
 ["minifiers","listers","uploaders"].each do |subdir|
-  Dir[File.join(File.dirname(__FILE__),subdir, "*")].each {|f| require f}
+  Dir[File.join(File.dirname(__FILE__),'cdn_fu',subdir, "*")].each {|f| require f}
 end

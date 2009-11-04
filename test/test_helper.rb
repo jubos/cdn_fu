@@ -1,3 +1,4 @@
+require 'rubygems'
 require File.dirname(__FILE__) + '/../lib/cdn_fu'
 require 'test/unit'
 
