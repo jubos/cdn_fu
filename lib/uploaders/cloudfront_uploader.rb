@@ -1,5 +1,4 @@
 # This uploader using aws:s3 gem to upload everything to the specified bucket
-require 'rubygems'
 require 'aws/s3'
 class CloudfrontUploader < CdnFu::Uploader
   include AWS::S3
