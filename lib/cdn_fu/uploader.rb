@@ -46,7 +46,7 @@ module CdnFu
       if self.class.required_attributes
         self.class.required_attributes.each do |attr|
           res = self.send(attr)
-          if res.blank?
+          if res.nil? or res == '' 
             raise CdnFuConfigError, "#{attr} must be specified in the uploader configuration"
           end
         end
