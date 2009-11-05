@@ -1,6 +1,7 @@
 CdnFu::Config.configure do |cfg|
   asset_id '1'
   asset_root_dir File.join(TEST_ROOT,'asset_root')
+  verbose false
 
   files do 
     glob "js/*.js", :minify => true, :gzip => true

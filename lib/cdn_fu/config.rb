@@ -27,6 +27,11 @@ module CdnFu
       @asset_id = args[0]
     end
 
+    def verbose(*args)
+      return @verbose if args.size == 0
+      @verbose = args[0]
+    end
+
     def asset_root_dir(*args)
       return @asset_root_dir if args.size == 0
       asset_root = args.first

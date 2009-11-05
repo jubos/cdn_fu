@@ -86,7 +86,7 @@ class CloudfrontUploader < CdnFu::Uploader
       options[:cache_control] = "max-age=#{8.years.to_i}"
       options[:expires] = 8.years.from_now.httpdate
       S3Object.store(versioned_filename,file_content,s3_bucket, options)
-      puts "[upload] #{s3_bucket} #{versioned_filename}"
+      puts "[upload] #{s3_bucket} #{versioned_filename}" if CdnFu::Config.config.verbose
     end
   end
 end
