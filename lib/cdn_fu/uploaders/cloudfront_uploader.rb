@@ -1,4 +1,5 @@
 # This uploader using aws:s3 gem to upload everything to the specified bucket
+require 'zlib'
 require 'aws/s3'
 class CloudfrontUploader < CdnFu::Uploader
   include AWS::S3
@@ -26,14 +27,14 @@ class CloudfrontUploader < CdnFu::Uploader
   # because cloudfront only invalidates its files every 24 hours, so you need
   # to have an incrementing id to avoid stale assets
   def validate
-    if !CdnFuConfig.asset_id 
-      raise CdnFuConfigError, "You must specify an asset_id at the top level"
+    if !CdnFu::Config.config.asset_id 
+      raise CdnFu::ConfigError, "You must specify an asset_id at the top level"
     end
     access_key = @s3_access_key ? @s3_access_key : ENV["CDN_FU_AMAZON_ACCESS_KEY"]
     secret_key = @s3_secret_key ? @s3_secret_key : ENV["CDN_FU_AMAZON_SECRET_KEY"]
 
     if !access_key or !secret_key
-      raise CdnFuConfigError, "Please specify s3_access_key and s3_secret_key attributes or use the environnment variables: CDN_FU_AMAZON_ACCESS_KEY and CDN_FU_AMAZON_SECRET_KEY"
+      raise CdnFu::ConfigError, "Please specify s3_access_key and s3_secret_key attributes or use the environnment variables: CDN_FU_AMAZON_ACCESS_KEY and CDN_FU_AMAZON_SECRET_KEY"
     end
   end
 
@@ -57,7 +58,7 @@ class CloudfrontUploader < CdnFu::Uploader
   end
 
   def upload_single_file(cf_file)
-    versioned_filename = CdnFuConfig.asset_id + "/" + cf_file.remote_path
+    versioned_filename = CdnFu::Config.config.asset_id + cf_file.remote_path
     options = {}
     options[:access] = :public_read
     path_to_upload = cf_file.minified_path
@@ -70,6 +71,7 @@ class CloudfrontUploader < CdnFu::Uploader
         exit
       end
     else
+      options[:access] = :public_read
       options["x-amz-meta-sha1_hash"] = sha1sum
       options["x-amz-meta-mtime"] = fstat.mtime.getutc.to_i 
       options["x-amz-meta-size"] = fstat.size
