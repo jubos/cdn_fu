@@ -11,7 +11,7 @@ namespace "cdn" do
     end
     File.open(cfg_path,'w') do |f|
       f << <<-EOF
-CdnFu::Config.configure do |config|
+CdnFu::Config.configure do
   # asset_id
   # default: RAILS_ASSET_ID
   # The asset id that you need to increment whenever your assets change (for
