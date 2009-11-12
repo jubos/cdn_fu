@@ -74,7 +74,7 @@ module CdnFu
           end
 
           File.open(File.join(tasks_dir,'cdn_fu.rake'),'w') do |file|
-            file << File.read(File.dirname(__FILE__) + "/../../tasks/cdn_fu.rake")
+            file << "require 'cdn_fu/tasks'"
           end
 
           puts "CDN Fu plugin added to #{rails_dir}"
