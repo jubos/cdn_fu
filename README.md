@@ -5,7 +5,7 @@ deliver networks.
 ## Installation
 Currently the gem is on gemcutter.org, so you need to add that to your sources
 
-    $ gem install cdn_fu
+    $ gem install --source=http://www.gemcutter.org cdn_fu
 
 ## Rails Installation
 First install the gem, then do the following
