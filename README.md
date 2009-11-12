@@ -1,20 +1,16 @@
-## cdn fu
-cdn fu is a fun domain specific language for deployment of assets to content
-deliver network.  There are 4 pluggable steps in the chain:
-
-1. Preprocessing
-2. Listing
-3. Minification
-4. Uploading
+## CDN Fu
+CDN Fu is a fun domain specific language for deployment of assets to content
+deliver networks.  
 
 ## Installation
+Currently the gem is on gemcutter.org, so you need to add that to your sources
 
-    ruby script/plugin install git://github.com/jubos/cdn_fu.git 
+    $ gem install cdn_fu
 
+## Rails Installation
+First install the gem, then do the following
+    $ cd your_rails_dir
+    $ cdnfu --rails .
+    $ rake cdn:init
 
-## Example
-For example, you can first run a Sass/Sprockets/AssetPacker during
-preprocessing, then minify all of the resulting .js and .css assets, and
-finally upload to a third party CDN.
-
-
+Check out the [CDN Fu Homepage](http://www.sevenforge.com/cdn_fu) for more details and examples
