@@ -1,0 +1,26 @@
+PATH
+  remote: .
+  specs:
+    cdn_fu (0.6.1)
+      aws-s3 (>= 0.6.2)
+      rake (>= 0.8)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    aws-s3 (0.6.2)
+      builder
+      mime-types
+      xml-simple
+    builder (3.0.0)
+    mime-types (1.16)
+    rake (0.9.0)
+    xml-simple (1.0.15)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  aws-s3 (>= 0.6.2)
+  cdn_fu!
+  rake (>= 0.8)

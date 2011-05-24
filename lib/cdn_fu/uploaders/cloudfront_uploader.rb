@@ -1,6 +1,7 @@
 # This uploader using aws:s3 gem to upload everything to the specified bucket
 require 'zlib'
 require 'aws/s3'
+require 'time'
 class CloudfrontUploader < CdnFu::Uploader
   include AWS::S3
   required_attribute :s3_bucket
@@ -58,7 +59,7 @@ class CloudfrontUploader < CdnFu::Uploader
   end
 
   def upload_single_file(cf_file)
-    versioned_filename = CdnFu::Config.config.asset_id + cf_file.remote_path
+    versioned_filename = CdnFu::Config.config.asset_id.to_s + cf_file.remote_path
     options = {}
     options[:access] = :public_read
     path_to_upload = cf_file.minified_path
@@ -69,6 +70,8 @@ class CloudfrontUploader < CdnFu::Uploader
       if remote_sha1 != sha1sum
         puts "Your assets are different from the ones in s3 with this asset_id.  Please increment your asset_id in cdn_fu.rb"
         exit
+      else
+        puts "Skipping #{versioned_filename}" if CdnFu::Config.config.verbose
       end
     else
       options[:access] = :public_read
@@ -77,6 +80,7 @@ class CloudfrontUploader < CdnFu::Uploader
       options["x-amz-meta-size"] = fstat.size
       file_content =open(path_to_upload).read 
       if cf_file.gzip? 
+        puts "Gzipping"
         options["Content-Encoding"] = 'gzip'
         strio = StringIO.open('', 'w')
         gz = Zlib::GzipWriter.new(strio)
@@ -85,8 +89,10 @@ class CloudfrontUploader < CdnFu::Uploader
         file_content = strio.string
       end
 
-      options[:cache_control] = "max-age=#{8.years.to_i}"
-      options[:expires] = 8.years.from_now.httpdate
+      eight_years = 8 * 60 * 60 * 24 * 365
+      eight_years_from_now = Time.now + eight_years
+      options[:cache_control] = "max-age=#{eight_years}"
+      options[:expires] = eight_years_from_now.httpdate
       S3Object.store(versioned_filename,file_content,s3_bucket, options)
       puts "[upload] #{s3_bucket} #{versioned_filename}" if CdnFu::Config.config.verbose
     end

@@ -1,11 +1,9 @@
-require 'rake'
+require 'bundler'
 require 'rake/testtask'
+Bundler::GemHelper.install_tasks
 
-task :default => :test
-
-Rake::TestTask.new do |t|
-  t.libs << "lib"
-  t.test_files = FileList['test/*test.rb']
-  t.verbose = true
+Rake::TestTask.new(:test) do |t|
+  t.test_files = FileList['test/*_test.rb']
+  t.ruby_opts = ['-rubygems'] if defined? Gem
+  t.ruby_opts << '-I.'
 end
-

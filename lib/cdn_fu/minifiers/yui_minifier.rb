@@ -12,7 +12,7 @@ class YuiMinifier < CdnFu::Minifier
   def validate
     if @yui_jar_path
       if File.exists?(@yui_jar_path)
-        output = `java -jar #{@yui_jar_path}`
+        output = `java -jar #{@yui_jar_path} 2>&1`
         if output !~ /java -jar yuicompressor-x\.y\.z\.jar/
           raise CdnFu::ConfigError,"Invalid YUI Compressor jar specified in cdn_fu.rb"
         end

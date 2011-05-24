@@ -1,8 +1,9 @@
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift dir unless $LOAD_PATH.include?(dir)
 
+require 'cdn_fu/version'
+
 module CdnFu
-  VERSION = 0.6
   # Do some sensible defaults for rails
   def self.init_rails(binding)
     cfg = CdnFu::Config.config
