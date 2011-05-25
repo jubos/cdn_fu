@@ -24,6 +24,7 @@ module CdnFu
         Dir.glob(File.join(asset_root,glob_str)).each do |file|
           fi = FileInfo.new
           fi.local_path = File.expand_path(file)
+          fi.preprocess = glob[:preprocess]
           fi.gzip = glob[:gzip]
           fi.minify = glob[:minify]
           root_sub_path = fi.local_path.gsub(asset_root,'')

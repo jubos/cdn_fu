@@ -18,7 +18,8 @@ class CloudfrontUploader < CdnFu::Uploader
       :secret_access_key => secret_key
     )
 
-    checksums = populate_existing_asset_checksums
+    populate_existing_asset_checksums(file_list)
+
     file_list.each do |file|
       upload_single_file(file)
     end
@@ -40,22 +41,25 @@ class CloudfrontUploader < CdnFu::Uploader
   end
 
   private
-  def populate_existing_asset_checksums 
+  def populate_existing_asset_checksums(file_list)
+    puts "Populating Existing Checksums...(could take a minute)" if CdnFu::Config.config.verbose
     @existing_asset_checksums = {}
     objects = []
     bucket = Bucket.find(@s3_bucket)
-    objects += bucket.objects(:max_keys => MAX_KEYS)
-    if objects.size == MAX_KEYS
-      loop do
-        new_objects = bucket.objects(:max_keys => MAX_KEYS,:marker => objects.last)
-        objects += new_objects
-        break if new_objects.size < MAX_KEYS
+
+    file_list.each do |cf_file|
+      versioned_filename = CdnFu::Config.config.asset_id.to_s + cf_file.remote_path
+      begin
+        obj = S3Object.about(versioned_filename,@s3_bucket)
+        if obj
+          existing_sha1 = obj.metadata["x-amz-meta-sha1-hash"]
+          if existing_sha1
+            @existing_asset_checksums[versioned_filename] = existing_sha1
+          end
+        end
+      rescue NoSuchKey
       end
     end
-    objects.each do |obj|
-      @existing_asset_checksums[obj.path] = obj.metadata['x-amz-meta-sha1-hash']
-    end
-    return objects
   end
 
   def upload_single_file(cf_file)
@@ -66,7 +70,7 @@ class CloudfrontUploader < CdnFu::Uploader
     path_to_upload ||= cf_file.local_path
     fstat = File.stat(path_to_upload)
     sha1sum = Digest::SHA1.hexdigest(File.open(path_to_upload).read)
-    if remote_sha1 = @existing_asset_checksums["/" + s3_bucket + "/" + versioned_filename]
+    if remote_sha1 = @existing_asset_checksums[versioned_filename]
       if remote_sha1 != sha1sum
         puts "Your assets are different from the ones in s3 with this asset_id.  Please increment your asset_id in cdn_fu.rb"
         exit
@@ -91,8 +95,8 @@ class CloudfrontUploader < CdnFu::Uploader
 
       eight_years = 8 * 60 * 60 * 24 * 365
       eight_years_from_now = Time.now + eight_years
-      options[:cache_control] = "max-age=#{eight_years}"
-      options[:expires] = eight_years_from_now.httpdate
+      options["Cache-Control"] = "public, max-age=#{eight_years}"
+      options["Expires"] = eight_years_from_now.httpdate
       S3Object.store(versioned_filename,file_content,s3_bucket, options)
       puts "[upload] #{s3_bucket} #{versioned_filename}" if CdnFu::Config.config.verbose
     end

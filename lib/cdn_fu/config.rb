@@ -27,6 +27,11 @@ module CdnFu
       @asset_id = args[0]
     end
 
+    def asset_host(*args)
+      return @asset_host if args.size == 0
+      @asset_host = args[0]
+    end
+
     def verbose(*args)
       return @verbose if args.size == 0
       @verbose = args[0]
@@ -52,14 +57,16 @@ module CdnFu
       @tmp_dir ||= "/tmp"
       FileUtils.mkdir_p(@tmp_dir)
 
+
+      file_list = @lister.list
+
+      puts "Here"
       case @preprocessor
       when Proc
         @preprocessor.call
-      when Class
-        @preprocessor.preprocess
+      else
+        @preprocessor.preprocess(file_list)
       end
-
-      file_list = @lister.list
 
       case @minifier
       when Proc
@@ -76,17 +83,28 @@ module CdnFu
       end
     end
 
-    def preprocess
+    def setup(&block)
       if block_given?
-        @preprocessor = proc
+        @setup_task = block
+      else 
+        raise ConfigError,"No setup block given"
+      end
+    end
+
+    def preprocess(&block)
+      if block_given?
+        @preprocessor = block
       else 
         raise ConfigError,"No preprocess block given"
       end
     end
 
-    def preprocessor(klass)
-      @preprocessor = klass
-      yield @preprocessor if block_given?
+    def preprocessor(*args, &block)
+      return @preprocessor if args.size == 0
+      preprocessor_class = args[0]
+      @preprocessor = preprocessor_class.new
+      puts "Setting up preprocessor_class #{@preprocessor}"
+      @preprocessor.instance_eval &block if block_given?
     end
 
     def files(&block)

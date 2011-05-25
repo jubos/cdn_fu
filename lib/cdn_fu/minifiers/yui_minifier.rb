@@ -27,9 +27,12 @@ class YuiMinifier < CdnFu::Minifier
   private
 
   def one_minification(file)
-    modified_path = File.join(CdnFu::Config.config.tmp_dir,"minified_#{File.basename(file.local_path)}")
-    `java -jar #{@yui_jar_path} #{file.local_path} > #{modified_path}`
-    puts "[minify] #{file.local_path}" if CdnFu::Config.config.verbose
-    file.minified_path = modified_path
+    minified_dir = File.join(CdnFu::Config.config.tmp_dir,"cdnfu_minified",File.dirname(file.local_path))
+    FileUtils.mkdir_p(minified_dir)
+    minified_path = File.join(minified_dir,"minified_#{File.basename(file.local_path)}")
+    input_path = file.processed_path ? file.processed_path : file.local_path
+    `java -jar #{@yui_jar_path} #{input_path} > #{minified_path}`
+    puts "[minify] #{input_path} to #{minified_path}" if CdnFu::Config.config.verbose
+    file.minified_path = minified_path 
   end
 end
