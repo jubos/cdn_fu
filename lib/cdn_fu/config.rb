@@ -60,7 +60,6 @@ module CdnFu
 
       file_list = @lister.list
 
-      puts "Here"
       case @preprocessor
       when Proc
         @preprocessor.call
